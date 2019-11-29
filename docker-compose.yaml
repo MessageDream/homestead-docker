@@ -1,0 +1,27 @@
+web:
+    image: shincoder/homestead:php7.3
+    restart: unless-stopped
+    ports:
+        - "8000:80" # web
+        - "2222:22" # ssh
+    volumes:
+        - ~/.composer:/home/homestead/.composer # composer caching
+        - ~/.gitconfig:/home/homestead/.gitconfig # Git configuration ( access alias && config )
+        - ~/.ssh:/home/homestead/.ssh # Ssh keys for easy deployment inside the container
+        - ~/Documents/docker/homestead/apps:/apps # all apps
+        - ~/Documents/workspace:/works # all proj
+        - ~/Documents/docker/homestead/nginx/sites-available:/etc/nginx/sites-available # nginx sites ( in case you recreate the container )
+        - ~/Documents/docker/homestead/nginx/sites-enabled:/etc/nginx/sites-enabled # nginx sites ( in case you recreate the container )
+        - ~/Documents/docker/homestead/nginx/ssl:/etc/nginx/ssl
+    links:
+        - mysql
+
+mysql:
+    image: mysql:8.0.18
+    restart: unless-stopped
+    ports:
+        - "3306:3306"
+    environment:
+        MYSQL_ROOT_PASSWORD: '123456'
+    volumes:
+        - ~/Documents/docker/mysql/conf:/etc/mysql/conf.d

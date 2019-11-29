@@ -80,13 +80,14 @@ sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.3/fpm/php.ini
 
 # Enable Remote xdebug
 echo "xdebug.remote_enable = 1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
-echo "xdebug.remote_connect_back = 1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_autostart = 1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_connect_back = 0" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_host = host.docker.internal" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
 echo "xdebug.remote_port = 9000" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
 echo "xdebug.var_display_max_depth = -1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
 echo "xdebug.var_display_max_children = -1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
 echo "xdebug.var_display_max_data = -1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
 echo "xdebug.max_nesting_level = 500" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
-
 # Not xdebug when on cli
 phpdismod -s cli xdebug
 
