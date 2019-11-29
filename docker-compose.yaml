@@ -2,7 +2,7 @@ web:
     image: shincoder/homestead:php7.3
     restart: unless-stopped
     ports:
-        - "8000:80" # web
+        - "80:80" # web
         - "2222:22" # ssh
     volumes:
         - ~/.composer:/home/homestead/.composer # composer caching
