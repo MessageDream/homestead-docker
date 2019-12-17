@@ -9,9 +9,9 @@ apt-get upgrade -y
 
 # Force Locale
 apt-get install -y locales
-echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
-locale-gen en_US.UTF-8
-export LANG=en_US.UTF-8
+echo "LC_ALL=zh_CN.UTF-8" >> /etc/default/locale
+locale-gen zh_CN.UTF-8
+export LANG=zh_CN.UTF-8
 
 # Install ssh server
 apt-get -y install openssh-server pwgen

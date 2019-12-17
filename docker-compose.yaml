@@ -1,5 +1,6 @@
 web:
-    image: shincoder/homestead:php7.3
+    context: ./hs
+    dockerfile: Dockerfile
     restart: unless-stopped
     ports:
         - "80:80" # web
