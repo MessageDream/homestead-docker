@@ -62,7 +62,7 @@ printf "\nPATH=\"/home/homestead/.composer/vendor/bin:\$PATH\"\n" | tee -a /home
 
 # Laravel Envoy
 su homestead <<'EOF'
-/usr/local/bin/composer global require "laravel/envoy=~1.5.0"
+/usr/local/bin/composer global require "laravel/envoy=~1.5.0" && /usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com
 EOF
 
 # Set Some PHP CLI Settings
