@@ -9,9 +9,9 @@ apt-get upgrade -y
 
 # Force Locale
 apt-get install -y locales
-echo "LC_ALL=zh_CN.UTF-8" >> /etc/default/locale
-locale-gen zh_CN.UTF-8
-export LANG=zh_CN.UTF-8
+echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
+locale-gen en_US.UTF-8
+export LANG=en_US.UTF-8
 
 # Install ssh server
 apt-get -y install openssh-server pwgen
@@ -62,7 +62,7 @@ printf "\nPATH=\"/home/homestead/.composer/vendor/bin:\$PATH\"\n" | tee -a /home
 
 # Laravel Envoy
 su homestead <<'EOF'
-/usr/local/bin/composer global require "laravel/envoy=~1.5.0" && /usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com
+/usr/local/bin/composer global require "laravel/envoy=~1.5.0" && /usr/local/bin/composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
 EOF
 
 # Set Some PHP CLI Settings
