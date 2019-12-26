@@ -62,7 +62,7 @@ printf "\nPATH=\"/home/homestead/.composer/vendor/bin:\$PATH\"\n" | tee -a /home
 
 # Laravel Envoy
 su homestead <<'EOF'
-/usr/local/bin/composer global require "laravel/envoy=~1.5.0" && /usr/local/bin/composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+/usr/local/bin/composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/ && /usr/local/bin/composer global require "laravel/envoy=~1.5.0"
 EOF
 
 # Set Some PHP CLI Settings
@@ -110,6 +110,7 @@ apt-get install -y nodejs
 npm install -g grunt-cli
 npm install -g gulp
 npm install -g bower
+npm install -g yarn
 
 # Install SQLite
 apt-get install -y sqlite3 libsqlite3-dev
@@ -169,3 +170,60 @@ rm /etc/nginx/sites-available/default
 
 cat > /etc/nginx/sites-enabled/default
 echo "$block" > "/etc/nginx/sites-enabled/default"
+
+#zsh 
+apt-get install -y zsh
+apt-get install -y powerline fonts-powerline
+apt-get install -y autojump
+
+su homestead <<'EOF'
+
+git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
+
+mkdir -p ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr
+curl -o ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr/incr-0.2.zsh https://mimosa-pudica.net/src/incr-0.2.zsh
+
+sed -i 's/ZSH_THEME=\"robbyrussell\"/ZSH_THEME=\"agnoster\"/' ~/.zshrc
+sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-completions autojump node npm pip zsh-syntax-highlighting)/' ~/.zshrc
+
+echo "source ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr/incr*.zsh" >> ~/.zshrc
+echo "source ~/.profile"  >> ~/.zshrc
+
+echo "autoload -U compinit && compinit" >> ~/.zshrc
+
+echo "# git" >> ~/.zshrc
+echo "alias grb='git rebase'" >> ~/.zshrc
+echo "alias gco='git checkout'" >> ~/.zshrc
+echo "alias gmg='git merge'" >> ~/.zshrc
+echo "alias gb='git branch'" >> ~/.zshrc
+echo "alias gbr='git branch -a'" >> ~/.zshrc
+echo "alias gs='git status'" >> ~/.zshrc
+echo "alias gstash='git stash'" >> ~/.zshrc
+echo "alias gpop='git stash pop'" >> ~/.zshrc
+echo "alias gfe='git fetch'" >> ~/.zshrc
+echo "alias gc='git clone'" >> ~/.zshrc
+echo "alias gl='git log'" >> ~/.zshrc
+echo "alias ga='git add '" >> ~/.zshrc
+echo "alias gal='git add .'" >> ~/.zshrc
+echo "alias gpull='git pull'" >> ~/.zshrc
+echo "alias gpush='git push'" >> ~/.zshrc
+echo "alias gcm='git commit -m'" >> ~/.zshrc
+echo "alias gam='git commit -a -m'" >> ~/.zshrc
+echo "alias glpush='git push --set-upstream origin '" >> ~/.zshrc
+echo "alias glg=\"git log --graph --pretty=format:'%Cred%h%Crest -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative\"" >> ~/.zshrc
+
+echo "# npm" >> ~/.zshrc
+echo "alias ns='npm start'" >> ~/.zshrc
+echo "alias ni='npm install'" >> ~/.zshrc
+echo "alias nb='npm run build'" >> ~/.zshrc
+echo "alias nig='npm install -g '" >> ~/.zshrc
+
+EOF
+usermod -s /bin/zsh homestead

@@ -1,6 +1,7 @@
-web:
-    context: ./hs
-    dockerfile: Dockerfile
+php:
+    # context: ./hs
+    # dockerfile: Dockerfile
+    image: jaydenzhao/homestead:php7.3
     restart: unless-stopped
     ports:
         - "80:80" # web
@@ -23,6 +24,6 @@ mysql:
     ports:
         - "3306:3306"
     environment:
-        MYSQL_ROOT_PASSWORD: '123456'
+        MYSQL_ROOT_PASSWORD: "123456"
     volumes:
         - ~/Documents/docker/mysql/conf:/etc/mysql/conf.d
