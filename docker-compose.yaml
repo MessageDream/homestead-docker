@@ -6,6 +6,7 @@ php:
     ports:
         - "80:80" # web
         - "2222:22" # ssh
+        - "9900:9900" # go remote debug
     volumes:
         - ~/.composer:/home/homestead/.composer # composer caching
         - ~/.gitconfig:/home/homestead/.gitconfig # Git configuration ( access alias && config )
