@@ -13,15 +13,6 @@ echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
 locale-gen en_US.UTF-8
 export LANG=en_US.UTF-8
 
-# Install Some PPAs
-apt-get install -y software-properties-common curl
-apt-add-repository ppa:nginx/development -y
-apt-add-repository ppa:ondrej/php -y
-apt-add-repository ppa:chris-lea/redis-server -y
-
-# Update Package Lists
-apt-get update
-
 # Install ssh server
 apt-get -y install openssh-server pwgen
 mkdir -p /var/run/sshd
@@ -29,11 +20,30 @@ sed -i "s/UsePrivilegeSeparation.*/UsePrivilegeSeparation no/g" /etc/ssh/sshd_co
 sed -i "s/UsePAM.*/UsePAM no/g" /etc/ssh/sshd_config
 sed -i "s/PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config
 
-# Basic packages
-apt-get install -y sudo software-properties-common nano curl \
-build-essential dos2unix gcc git git-flow libpcre3-dev apt-utils \
-make python2.7-dev python-pip pip3 re2c supervisor unattended-upgrades whois vim zip unzip
+# Install Some PPAs
+apt-get install -y software-properties-common curl
 
+apt-add-repository ppa:nginx/development -y
+apt-add-repository ppa:ondrej/php -y
+apt-add-repository ppa:chris-lea/redis-server -y
+
+tee /etc/apt/sources.list.d/pgdg.list <<END
+deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+END
+
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+# Update Package Lists
+apt-get update
+
+# Install Some Basic Packages
+apt-get install -y build-essential dos2unix gcc git libmcrypt4 libpcre3-dev libpng-dev chrony unzip make python2.7-dev \
+python-pip re2c supervisor unattended-upgrades whois vim libnotify-bin pv cifs-utils mcrypt \
+zsh graphviz avahi-daemon tshark imagemagick autoconf libressl
+
+# python3-dev python3-pip
+# update pip3
+# pip3 install --upgrade pip
 
 # Create homestead user
 adduser homestead
@@ -45,8 +55,13 @@ usermod -aG www-data homestead
 # Timezone
 ln -sf /usr/share/zoneinfo/UTC /etc/localtime
 
+# Install Generic PHP packages
+apt-get install -y --allow-change-held-packages \
+php-imagick php-memcached php-redis php-xdebug php-dev
+
 # PHP
-apt-get install -y php7.4 php7.4-bcmath php7.4-bz2 php7.4-cgi php7.4-cli php7.4-common php7.4-curl php7.4-dba php7.4-dev \
+apt-get install -y --allow-change-held-packages \
+php7.4 php7.4-bcmath php7.4-bz2 php7.4-cgi php7.4-cli php7.4-common php7.4-curl php7.4-dba php7.4-dev \
 php7.4-enchant php7.4-fpm php7.4-gd php7.4-gmp php7.4-imap php7.4-interbase php7.4-intl php7.4-json php7.4-ldap \
 php7.4-mbstring php7.4-mysql php7.4-odbc php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-readline \
 php7.4-snmp php7.4-soap php7.4-sqlite3 php7.4-sybase php7.4-tidy php7.4-xml php7.4-xmlrpc php7.4-xsl php7.4-zip
@@ -148,7 +163,7 @@ sed -i "s/;listen\.group.*/listen.group = homestead/" /etc/php/7.4/fpm/pool.d/ww
 sed -i "s/;listen\.mode.*/listen.mode = 0666/" /etc/php/7.4/fpm/pool.d/www.conf
 
 # Install Node
-curl --silent --location https://deb.nodesource.com/setup_12.x | bash -
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 apt-get install -y nodejs
 npm install -g grunt-cli
 npm install -g gulp-cli
@@ -166,7 +181,6 @@ echo "export GOROOT=/usr/local/go" >> /etc/profile
 echo "export GO111MODULE=on" >> /etc/profile
 echo "export GOPROXY=https://goproxy.cn,direct" >> /etc/profile
 echo "export PATH=$PATH:$GOROOT/bin" >> /etc/profile
-export PATH=$PATH:$GOROOT/bin
 
 # Install SQLite
 apt-get install -y sqlite3 libsqlite3-dev
@@ -227,8 +241,7 @@ rm /etc/nginx/sites-available/default
 cat > /etc/nginx/sites-enabled/default
 echo "$block" > "/etc/nginx/sites-enabled/default"
 
-#zsh 
-apt-get install -y zsh
+#zsh
 apt-get install -y powerline fonts-powerline
 apt-get install -y autojump
 
@@ -280,24 +293,24 @@ echo "alias nrun='npm run'" >> ~/.zshrc
 
 echo "autoload -U compinit && compinit" >> ~/.zshrc
 
-go get -u -v github.com/mdempsky/gocode
-go get -u -v github.com/uudashr/gopkgs/cmd/gopkgs
-go get -u -v github.com/ramya-rao-a/go-outline
-go get -u -v github.com/acroca/go-symbols
-go get -u -v golang.org/x/tools/cmd/guru
-go get -u -v golang.org/x/tools/cmd/gorename
-go get -u -v github.com/cweill/gotests/...
-go get -u -v github.com/fatih/gomodifytags
-go get -u -v github.com/josharian/impl
-go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
-go get -u -v github.com/haya14busa/goplay/cmd/goplay
-go get -u -v github.com/godoctor/godoctor
-go get -u -v github.com/go-delve/delve/cmd/dlv
-go get -u -v github.com/stamblerre/gocode
-go get -u -v github.com/rogpeppe/godef
-go get -u -v golang.org/x/tools/cmd/goimports
-go get -u -v golang.org/x/lint/golint
-go get -u -v golang.org/x/tools/gopls
+/usr/local/go/bin/go get -u -v github.com/mdempsky/gocode
+/usr/local/go/bin/go get -u -v github.com/uudashr/gopkgs/cmd/gopkgs
+/usr/local/go/bin/go get -u -v github.com/ramya-rao-a/go-outline
+/usr/local/go/bin/go get -u -v github.com/acroca/go-symbols
+/usr/local/go/bin/go get -u -v golang.org/x/tools/cmd/guru
+/usr/local/go/bin/go get -u -v golang.org/x/tools/cmd/gorename
+/usr/local/go/bin/go get -u -v github.com/cweill/gotests/...
+/usr/local/go/bin/go get -u -v github.com/fatih/gomodifytags
+/usr/local/go/bin/go get -u -v github.com/josharian/impl
+/usr/local/go/bin/go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
+/usr/local/go/bin/go get -u -v github.com/haya14busa/goplay/cmd/goplay
+/usr/local/go/bin/go get -u -v github.com/godoctor/godoctor
+/usr/local/go/bin/go get -u -v github.com/go-delve/delve/cmd/dlv
+/usr/local/go/bin/go get -u -v github.com/stamblerre/gocode
+/usr/local/go/bin/go get -u -v github.com/rogpeppe/godef
+/usr/local/go/bin/go get -u -v golang.org/x/tools/cmd/goimports
+/usr/local/go/bin/go get -u -v golang.org/x/lint/golint
+/usr/local/go/bin/go get -u -v golang.org/x/tools/gopls
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOBIN v1.21.1
 
 EOF
