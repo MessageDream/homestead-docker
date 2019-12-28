@@ -1,18 +1,19 @@
-php:
+dev:
     # context: ./hs
     # dockerfile: Dockerfile
-    image: jaydenzhao/homestead:php7.3
+    image: jaydenzhao/homestead:v1.0
     restart: unless-stopped
     ports:
         - "80:80" # web
         - "2222:22" # ssh
         - "9900:9900" # go remote debug
     volumes:
-        - ~/.composer:/home/homestead/.composer # composer caching
         - ~/.gitconfig:/home/homestead/.gitconfig # Git configuration ( access alias && config )
         - ~/.ssh:/home/homestead/.ssh # Ssh keys for easy deployment inside the container
-        - ~/Documents/docker/homestead/apps:/apps # all apps
-        - ~/Documents/workspace:/works # all proj
+        # - ~/Documents/docker/homestead/composer:/home/homestead/.composer # composer caching
+        # - ~/Documents/docker/homestead/gopath:/home/homestead/gopath
+        # - ~/Documents/docker/homestead/vscode:/home/homestead/.vscode
+        - ~/Documents/workspace:/home/homestead/works # all proj
         - ~/Documents/docker/homestead/nginx/sites-available:/etc/nginx/sites-available # nginx sites ( in case you recreate the container )
         - ~/Documents/docker/homestead/nginx/sites-enabled:/etc/nginx/sites-enabled # nginx sites ( in case you recreate the container )
         - ~/Documents/docker/homestead/nginx/ssl:/etc/nginx/ssl

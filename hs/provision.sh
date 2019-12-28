@@ -20,30 +20,20 @@ sed -i "s/UsePrivilegeSeparation.*/UsePrivilegeSeparation no/g" /etc/ssh/sshd_co
 sed -i "s/UsePAM.*/UsePAM no/g" /etc/ssh/sshd_config
 sed -i "s/PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config
 
-# Install Some PPAs
-apt-get install -y software-properties-common curl
+# Basic packages
+apt-get install -y sudo software-properties-common nano curl \
+build-essential dos2unix gcc git git-flow libpcre3-dev apt-utils \
+make python-dev python-pip python3-dev python3-pip re2c supervisor \
+unattended-upgrades whois vim zip unzip imagemagick zsh
 
-apt-add-repository ppa:nginx/development -y
+# update pip3
+pip3 install --upgrade pip
+
+# PPA
 apt-add-repository ppa:ondrej/php -y
-apt-add-repository ppa:chris-lea/redis-server -y
-
-tee /etc/apt/sources.list.d/pgdg.list <<END
-deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
-END
-
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 # Update Package Lists
 apt-get update
-
-# Install Some Basic Packages
-apt-get install -y build-essential dos2unix gcc git libmcrypt4 libpcre3-dev libpng-dev chrony unzip make python2.7-dev \
-python-pip re2c supervisor unattended-upgrades whois vim libnotify-bin pv cifs-utils mcrypt \
-zsh graphviz avahi-daemon tshark imagemagick autoconf libressl
-
-# python3-dev python3-pip
-# update pip3
-# pip3 install --upgrade pip
 
 # Create homestead user
 adduser homestead
@@ -55,23 +45,24 @@ usermod -aG www-data homestead
 # Timezone
 ln -sf /usr/share/zoneinfo/UTC /etc/localtime
 
-# Install Generic PHP packages
-apt-get install -y --allow-change-held-packages \
-php-imagick php-memcached php-redis php-xdebug php-dev
-
 # PHP
-apt-get install -y --allow-change-held-packages \
-php7.4 php7.4-bcmath php7.4-bz2 php7.4-cgi php7.4-cli php7.4-common php7.4-curl php7.4-dba php7.4-dev \
-php7.4-enchant php7.4-fpm php7.4-gd php7.4-gmp php7.4-imap php7.4-interbase php7.4-intl php7.4-json php7.4-ldap \
-php7.4-mbstring php7.4-mysql php7.4-odbc php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-readline \
-php7.4-snmp php7.4-soap php7.4-sqlite3 php7.4-sybase php7.4-tidy php7.4-xml php7.4-xmlrpc php7.4-xsl php7.4-zip
+apt-get install -y php7.3-cli php7.3-dev \
+php7.3-mysql php7.3-pgsql php7.3-sqlite3 php7.3-soap \
+php7.3-json php7.3-curl php7.3-gd \
+php7.3-gmp php7.3-imap php-xdebug \
+php7.3-mbstring php7.3-zip \
+php-pear php-apcu php-memcached php-redis \
+php7.3-dom php7.3-bcmath php-imagick
 
-update-alternatives --set php /usr/bin/php7.4
-update-alternatives --set php-config /usr/bin/php-config7.4
-update-alternatives --set phpize /usr/bin/phpize7.4
+# Nginx & PHP-FPM
+apt-get install -y nginx php7.3-fpm
 
 # Install Composer
-curl -sS https://getcomposer.org/installer | php
+curl -sS https://getcomposer.org/installer | php -d default_socket_timeout=3600
+# php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+# chmod +x composer-setup.php
+# php composer-setup.php
+# php -r "unlink('composer-setup.php');"
 mv composer.phar /usr/local/bin/composer
 
 # Add Composer Global Bin To Path
@@ -79,7 +70,7 @@ printf "\nPATH=\"/home/homestead/.composer/vendor/bin:\$PATH\"\n" | tee -a /home
 
 # Laravel Envoy
 su homestead <<'EOF'
-/usr/local/bin/composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/ 
+/usr/local/bin/composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
 /usr/local/bin/composer global require hirak/prestissimo
 /usr/local/bin/composer global require "laravel/envoy=^1.6"
 /usr/local/bin/composer global require "laravel/installer=^3.0.1"
@@ -89,65 +80,39 @@ su homestead <<'EOF'
 EOF
 
 # Set Some PHP CLI Settings
-sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.4/cli/php.ini
-sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.4/cli/php.ini
-sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.4/cli/php.ini
-sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.4/cli/php.ini
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.3/cli/php.ini
+sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.3/cli/php.ini
+sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.3/cli/php.ini
+sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.3/cli/php.ini
 
-sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.4/fpm/php.ini
-sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.4/fpm/php.ini
-sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/7.4/fpm/php.ini
-sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.4/fpm/php.ini
-sed -i "s/upload_max_filesize = .*/upload_max_filesize = 100M/" /etc/php/7.4/fpm/php.ini
-sed -i "s/post_max_size = .*/post_max_size = 100M/" /etc/php/7.4/fpm/php.ini
-sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.4/fpm/php.ini
+sed -i "s/.*daemonize.*/daemonize = no/" /etc/php/7.3/fpm/php-fpm.conf
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.3/fpm/php.ini
+sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.3/fpm/php.ini
+sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/7.3/fpm/php.ini
+sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.3/fpm/php.ini
+sed -i "s/upload_max_filesize = .*/upload_max_filesize = 100M/" /etc/php/7.3/fpm/php.ini
+sed -i "s/post_max_size = .*/post_max_size = 100M/" /etc/php/7.3/fpm/php.ini
+sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/7.3/fpm/php.ini
 
-printf "[openssl]\n" | tee -a /etc/php/7.4/fpm/php.ini
-printf "openssl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | tee -a /etc/php/7.4/fpm/php.ini
+printf "[openssl]\n" | tee -a /etc/php/7.3/fpm/php.ini
+printf "openssl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | tee -a /etc/php/7.3/fpm/php.ini
 
-printf "[curl]\n" | tee -a /etc/php/7.4/fpm/php.ini
-printf "curl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | tee -a /etc/php/7.4/fpm/php.ini
+printf "[curl]\n" | tee -a /etc/php/7.3/fpm/php.ini
+printf "curl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | tee -a /etc/php/7.3/fpm/php.ini
 
 # Enable Remote xdebug
-echo "xdebug.remote_enable = 1" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.remote_autostart = 1" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.remote_connect_back = 0" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.remote_host = host.docker.internal" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.remote_port = 9000" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.var_display_max_depth = -1" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.var_display_max_children = -1" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.var_display_max_data = -1" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "xdebug.max_nesting_level = 512" >> /etc/php/7.4/mods-available/xdebug.ini
-echo "opcache.revalidate_freq = 0" >> /etc/php/7.4/mods-available/opcache.ini
+echo "xdebug.remote_enable = 1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_autostart = 1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_connect_back = 0" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_host = host.docker.internal" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_port = 9000" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.var_display_max_depth = -1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.var_display_max_children = -1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.var_display_max_data = -1" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+echo "xdebug.max_nesting_level = 512" >> /etc/php/7.3/fpm/conf.d/20-xdebug.ini
+
 # Not xdebug when on cli
 phpdismod -s cli xdebug
-
-# Nginx & PHP-FPM
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-nginx
-
-# Copy fastcgi_params to Nginx because they broke it on the PPA
-cat > /etc/nginx/fastcgi_params << EOF
-fastcgi_param	QUERY_STRING		\$query_string;
-fastcgi_param	REQUEST_METHOD		\$request_method;
-fastcgi_param	CONTENT_TYPE		\$content_type;
-fastcgi_param	CONTENT_LENGTH		\$content_length;
-fastcgi_param	SCRIPT_FILENAME		\$request_filename;
-fastcgi_param	SCRIPT_NAME			\$fastcgi_script_name;
-fastcgi_param	REQUEST_URI			\$request_uri;
-fastcgi_param	DOCUMENT_URI		\$document_uri;
-fastcgi_param	DOCUMENT_ROOT		\$document_root;
-fastcgi_param	SERVER_PROTOCOL		\$server_protocol;
-fastcgi_param	GATEWAY_INTERFACE	CGI/1.1;
-fastcgi_param	SERVER_SOFTWARE		nginx/\$nginx_version;
-fastcgi_param	REMOTE_ADDR			\$remote_addr;
-fastcgi_param	REMOTE_PORT			\$remote_port;
-fastcgi_param	SERVER_ADDR			\$server_addr;
-fastcgi_param	SERVER_PORT			\$server_port;
-fastcgi_param	SERVER_NAME			\$server_name;
-fastcgi_param	HTTPS				\$https if_not_empty;
-fastcgi_param	REDIRECT_STATUS		200;
-EOF
 
 # Set The Nginx & PHP-FPM User
 sed -i '1 idaemon off;' /etc/nginx/nginx.conf
@@ -155,32 +120,32 @@ sed -i "s/user www-data;/user homestead;/" /etc/nginx/nginx.conf
 sed -i "s/# server_names_hash_bucket_size.*/server_names_hash_bucket_size 64;/" /etc/nginx/nginx.conf
 
 mkdir -p /run/php
-touch /run/php/php7.4-fpm.sock
-sed -i "s/user = www-data/user = homestead/" /etc/php/7.4/fpm/pool.d/www.conf
-sed -i "s/group = www-data/group = homestead/" /etc/php/7.4/fpm/pool.d/www.conf
-sed -i "s/;listen\.owner.*/listen.owner = homestead/" /etc/php/7.4/fpm/pool.d/www.conf
-sed -i "s/;listen\.group.*/listen.group = homestead/" /etc/php/7.4/fpm/pool.d/www.conf
-sed -i "s/;listen\.mode.*/listen.mode = 0666/" /etc/php/7.4/fpm/pool.d/www.conf
+touch /run/php/php7.3-fpm.sock
+sed -i "s/user = www-data/user = homestead/" /etc/php/7.3/fpm/pool.d/www.conf
+sed -i "s/group = www-data/group = homestead/" /etc/php/7.3/fpm/pool.d/www.conf
+sed -i "s/;listen\.owner.*/listen.owner = homestead/" /etc/php/7.3/fpm/pool.d/www.conf
+sed -i "s/;listen\.group.*/listen.group = homestead/" /etc/php/7.3/fpm/pool.d/www.conf
+sed -i "s/;listen\.mode.*/listen.mode = 0666/" /etc/php/7.3/fpm/pool.d/www.conf
 
 # Install Node
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+curl --silent --location https://deb.nodesource.com/setup_12.x | sudo -E bash -
 apt-get install -y nodejs
+
+npm install -g -y yarn
 npm install -g grunt-cli
 npm install -g gulp-cli
-npm install -g bower
-npm install -g yarn
 
 # golang
-curl -o /usr/local/src/go1.13.5.linux-amd64.tar.gz https://studygolang.com/dl/golang/go1.13.5.linux-amd64.tar.gz
-tar -zxvf /usr/local/src/go1.13.5.linux-amd64.tar.gz -C /usr/local/
-echo "export GOROOT=/usr/local/go" >> /etc/profile
-# echo "export GOOS=linux" >> /etc/profile
-# echo "export GOARCH=amd64" >> /etc/profile
-# echo "export GOHOSTOS=linux" >> /etc/profile
-# echo "export GOTOOLDIR==$GOROOT/pkg/tool/linux_amd64" >> /etc/profile
-echo "export GO111MODULE=on" >> /etc/profile
-echo "export GOPROXY=https://goproxy.cn,direct" >> /etc/profile
-echo "export PATH=$PATH:$GOROOT/bin" >> /etc/profile
+wget -q -P /usr/local/src/ https://studygolang.com/dl/golang/go1.13.5.linux-amd64.tar.gz
+tar -zxf /usr/local/src/go1.13.5.linux-amd64.tar.gz -C /usr/local/
+rm -f /usr/local/src/go1.13.5.linux-amd64.tar.gz
+echo "export GOROOT=/usr/local/go" | tee -a /etc/profile.d/golang.sh /etc/zsh/zshenv
+# echo "export GOOS=linux" | tee -a /etc/profile.d/golang.sh /etc/zsh/zshenv
+# echo 'export GOTOOLDIR==$GOROOT/pkg/tool/linux_amd64' | tee -a /etc/profile.d/golang.sh /etc/zsh/zshenv
+echo "export GO111MODULE=on" | tee -a /etc/profile.d/golang.sh /etc/zsh/zshenv
+echo "export GOPROXY=https://goproxy.cn,direct" | tee -a /etc/profile.d/golang.sh /etc/zsh/zshenv
+echo 'export PATH=$PATH:$GOROOT/bin' | tee -a /etc/profile.d/golang.sh /etc/zsh/zshenv
+chmod 755 /etc/profile.d/golang.sh
 
 # Install SQLite
 apt-get install -y sqlite3 libsqlite3-dev
@@ -200,35 +165,25 @@ sed -i "s/daemonize yes/daemonize no/" /etc/redis/redis.conf
 block="server {
     listen 80 default_server;
     listen [::]:80 default_server ipv6only=on;
-
     root /var/www/html;
     server_name localhost;
-
     index index.html index.htm index.php;
-
     charset utf-8;
-
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
-
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
-
     access_log off;
     error_log  /var/log/nginx/app-error.log error;
-
     error_page 404 /index.php;
-
     sendfile off;
-
     location ~ \.php$ {
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
         fastcgi_pass unix:/run/php/php7.3-fpm.sock;
         fastcgi_index index.php;
         include fastcgi.conf;
     }
-
     location ~ /\.ht {
         deny all;
     }
@@ -241,9 +196,8 @@ rm /etc/nginx/sites-available/default
 cat > /etc/nginx/sites-enabled/default
 echo "$block" > "/etc/nginx/sites-enabled/default"
 
-#zsh
-apt-get install -y powerline fonts-powerline
-apt-get install -y autojump
+# oh my zsh 
+apt-get install -y powerline fonts-powerline autojump
 
 su homestead <<'EOF'
 
@@ -265,11 +219,11 @@ sed -i 's/plugins=(git)/plugins=(git golang node npm npx yarn pip composer larav
 echo "source ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr/incr*.zsh" >> ~/.zshrc
 echo "source ~/.profile"  >> ~/.zshrc
 
-export GOPATH=~/Documents/gopath
+export GOPATH=~/gopath
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOBIN
 
-echo "export GOPATH=$GOPATH" >> ~/.zshrc
+echo "export GOPATH=~/gopath" >> ~/.zshrc
 echo 'export GOBIN=$GOPATH/bin' >> ~/.zshrc
 echo 'export PATH=$PATH:$GOBIN' >> ~/.zshrc
 echo "export GOCACHE=~/.cache/go-build" >> ~/.zshrc
@@ -277,10 +231,10 @@ echo "export GOENV=~/.config/go/env" >> ~/.zshrc
 
 
 echo "# go remote debug" >> ~/.zshrc
-echo "alias godebug=dlv debug --headless --listen \":9900\" --log --api-version 2" >> ~/.zshrc
-echo "alias goattach=dlv attach --headless --listen \":9900\" --log --api-version 2" >> ~/.zshrc
-echo "alias goexec=dlv exec --headless --listen \":9900\" --log --api-version 2" >> ~/.zshrc
-echo "alias gobuild=go build -gcflags=\"all=-N -l\"" >> ~/.zshrc
+echo "alias godebug='dlv debug --headless --listen \":9900\" --log --api-version 2'" >> ~/.zshrc
+echo "alias goattach='dlv attach --headless --listen \":9900\" --log --api-version 2'" >> ~/.zshrc
+echo "alias goexec='dlv exec --headless --listen \":9900\" --log --api-version 2'" >> ~/.zshrc
+echo "alias gobuild='go build -gcflags=\"all=-N -l\"'" >> ~/.zshrc
 
 echo "# npm" >> ~/.zshrc
 echo "alias nst='npm start'" >> ~/.zshrc
@@ -293,26 +247,27 @@ echo "alias nrun='npm run'" >> ~/.zshrc
 
 echo "autoload -U compinit && compinit" >> ~/.zshrc
 
-/usr/local/go/bin/go get -u -v github.com/mdempsky/gocode
-/usr/local/go/bin/go get -u -v github.com/uudashr/gopkgs/cmd/gopkgs
-/usr/local/go/bin/go get -u -v github.com/ramya-rao-a/go-outline
-/usr/local/go/bin/go get -u -v github.com/acroca/go-symbols
-/usr/local/go/bin/go get -u -v golang.org/x/tools/cmd/guru
-/usr/local/go/bin/go get -u -v golang.org/x/tools/cmd/gorename
-/usr/local/go/bin/go get -u -v github.com/cweill/gotests/...
-/usr/local/go/bin/go get -u -v github.com/fatih/gomodifytags
-/usr/local/go/bin/go get -u -v github.com/josharian/impl
-/usr/local/go/bin/go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
-/usr/local/go/bin/go get -u -v github.com/haya14busa/goplay/cmd/goplay
-/usr/local/go/bin/go get -u -v github.com/godoctor/godoctor
-/usr/local/go/bin/go get -u -v github.com/go-delve/delve/cmd/dlv
-/usr/local/go/bin/go get -u -v github.com/stamblerre/gocode
-/usr/local/go/bin/go get -u -v github.com/rogpeppe/godef
-/usr/local/go/bin/go get -u -v golang.org/x/tools/cmd/goimports
-/usr/local/go/bin/go get -u -v golang.org/x/lint/golint
-/usr/local/go/bin/go get -u -v golang.org/x/tools/gopls
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOBIN v1.21.1
+/usr/local/go/bin/go get -u github.com/mdempsky/gocode
+/usr/local/go/bin/go get -u github.com/uudashr/gopkgs/cmd/gopkgs
+/usr/local/go/bin/go get -u github.com/ramya-rao-a/go-outline
+/usr/local/go/bin/go get -u github.com/acroca/go-symbols
+/usr/local/go/bin/go get -u golang.org/x/tools/cmd/guru
+/usr/local/go/bin/go get -u golang.org/x/tools/cmd/gorename
+/usr/local/go/bin/go get -u github.com/cweill/gotests/...
+/usr/local/go/bin/go get -u github.com/fatih/gomodifytags
+/usr/local/go/bin/go get -u github.com/josharian/impl
+/usr/local/go/bin/go get -u github.com/davidrjenni/reftools/cmd/fillstruct
+/usr/local/go/bin/go get -u github.com/haya14busa/goplay/cmd/goplay
+/usr/local/go/bin/go get -u github.com/godoctor/godoctor
+/usr/local/go/bin/go get -u github.com/go-delve/delve/cmd/dlv
+/usr/local/go/bin/go get -u github.com/stamblerre/gocode
+/usr/local/go/bin/go get -u github.com/rogpeppe/godef
+/usr/local/go/bin/go get -u golang.org/x/tools/cmd/goimports
+/usr/local/go/bin/go get -u golang.org/x/lint/golint
+/usr/local/go/bin/go get -u golang.org/x/tools/gopls
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOBIN v1.21.0
 
+mkdir -p $WORK_DIR
 EOF
 
 apt-get -y autoremove;
