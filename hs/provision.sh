@@ -214,7 +214,7 @@ mkdir -p ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr
 curl -o ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr/incr-0.2.zsh https://mimosa-pudica.net/src/incr-0.2.zsh
 
 sed -i 's/ZSH_THEME=\"robbyrussell\"/ZSH_THEME=\"agnoster\"/' ~/.zshrc
-sed -i 's/plugins=(git)/plugins=(git golang node npm npx yarn pip composer laravel laravel4 laravel5 vi-mode systemd supervisor autojump zsh-autosuggestions zsh-completions zsh-syntax-highlighting)/' ~/.zshrc
+sed -i 's/plugins=(git)/plugins=(git golang node npm npx yarn pip composer laravel vi-mode systemd supervisor autojump zsh-autosuggestions zsh-completions zsh-syntax-highlighting)/' ~/.zshrc
 
 echo "source ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/incr/incr*.zsh" >> ~/.zshrc
 echo "source ~/.profile"  >> ~/.zshrc
@@ -244,6 +244,19 @@ echo "alias nins='npm install -S'" >> ~/.zshrc
 echo "alias nb='npm run build'" >> ~/.zshrc
 echo "alias ngin='npm install -g'" >> ~/.zshrc
 echo "alias nrun='npm run'" >> ~/.zshrc
+
+echo "# artisan" >> ~/.zshrc
+echo "alias pada='php artisan dump-autoload'" >> ~/.zshrc
+echo "alias parol='php artisan routes'" >> ~/.zshrc
+echo "alias pavp='php artisan vendor:publish'" >> ~/.zshrc
+echo "alias pamre='php artisan migrate:reset'" >> ~/.zshrc
+echo "alias pakg='php artisan key:generate'" >> ~/.zshrc
+echo "alias paop='php artisan optimize'" >> ~/.zshrc
+echo "alias pacc='php artisan clear-compiled'" >> ~/.zshrc
+echo "alias pacm='php artisan command:make'" >> ~/.zshrc
+echo "alias pami='php artisan migrate:install'" >> ~/.zshrc
+echo "alias pamm='php artisan migrate:make'" >> ~/.zshrc
+
 
 echo "autoload -U compinit && compinit" >> ~/.zshrc
 
