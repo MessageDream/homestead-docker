@@ -255,7 +255,7 @@ echo "alias paop='php artisan optimize'" >> ~/.zshrc
 echo "alias pacc='php artisan clear-compiled'" >> ~/.zshrc
 echo "alias pacm='php artisan command:make'" >> ~/.zshrc
 echo "alias pami='php artisan migrate:install'" >> ~/.zshrc
-echo "alias pamm='php artisan migrate:make'" >> ~/.zshrc
+echo "alias pammg='php artisan make:migrate'" >> ~/.zshrc
 
 
 echo "autoload -U compinit && compinit" >> ~/.zshrc
