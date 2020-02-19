@@ -24,7 +24,7 @@ sed -i "s/PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config
 apt-get install -y sudo software-properties-common nano curl \
 build-essential dos2unix gcc git git-flow libpcre3-dev apt-utils \
 make python-dev python-pip python3-dev python3-pip re2c supervisor \
-unattended-upgrades whois vim zip unzip imagemagick zsh
+unattended-upgrades whois vim zip unzip imagemagick zsh net-tools inetutils-ping
 
 # update pip3
 pip3 install --upgrade pip
